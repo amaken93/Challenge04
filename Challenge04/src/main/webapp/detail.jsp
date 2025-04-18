@@ -66,8 +66,8 @@
 									<p><%=studentMemo.getStaffName() %></p>
 								</div>
 								<div class="col-md-12 form-group">
-									<label class="form-control-label">最終更新日</label>
-<!--									<p><%=studentMemo.getStaffName() %></p>-->
+									<label class="form-control-label">最終更新日:</label>
+									<p><%=studentMemo.getDate() %></p>
 								</div>
 								<div class="col-md-12 align-center">
 									<button type="submit" class="btn btn-primary btn-form display-4">登録</button>

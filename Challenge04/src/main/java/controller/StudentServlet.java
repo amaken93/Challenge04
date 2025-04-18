@@ -71,12 +71,20 @@ public class StudentServlet extends HttpServlet {
 			throws ServletException, IOException {
 		// TODO Auto-generated method stub
 		String nextPage = null;
+		String keyword = request.getParameter("keyword");
 		try {
+			List<Student> studentList;
 			StudentDao studentDao = new StudentDao();
-			List<Student> studentList = studentDao.findAllStudent();
-
-			request.setAttribute("studentList", studentList);
-
+			if(keyword != null) {
+				studentList = studentDao.serchStudent(keyword);
+				request.setAttribute("studentList", studentList);
+				if(studentList.isEmpty()) {
+					request.setAttribute("message", "該当する学生は見つかりませんでした。");
+				}
+			}else {
+				studentList = studentDao.findAllStudent();
+				request.setAttribute("studentList", studentList);
+			}
 			nextPage = "list.jsp";
 		} catch (CampusException e) {
 			// TODO: handle exception

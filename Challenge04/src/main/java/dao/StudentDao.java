@@ -1,8 +1,7 @@
 package dao;
 
-import java.sql.Date;
 import java.sql.SQLException;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
@@ -15,6 +14,32 @@ public class StudentDao extends BaseDao {
 	public StudentDao() throws CampusException {
 		super();
 		// TODO 自動生成されたコンストラクター・スタブ
+	}
+	
+	public ArrayList<Student> serchStudent(String keyword) throws CampusException{
+		ArrayList<Student> studentList = new ArrayList<Student>();
+		try {
+			String sql = "SELECT * FROM student WHERE student_name ~ ?";
+			
+			ps = ct.prepareStatement(sql);
+			ps.setString(1, ".*"+keyword+".*");
+			rs = ps.executeQuery();
+			
+			while(rs.next()) {
+				String studentNumber = rs.getString("student_number");
+				String studentName = rs.getString("student_name");
+				
+				Student student = new Student(studentNumber, studentName);
+				
+				studentList.add(student);
+			}
+		}catch (SQLException e) {
+			// TODO: handle exception
+			e.printStackTrace();
+			throw new CampusException("学生情報の取得に失敗しました");
+		}
+		
+		return studentList;
 	}
 	
 	public ArrayList<Student> findAllStudent() throws CampusException{
@@ -70,7 +95,7 @@ public class StudentDao extends BaseDao {
 		try {
 			String sql ="SELECT student.student_number, student.student_name, "
 					+ "staff.staff_id, staff.staff_name, "
-					+ "memo.memo_id, memo.memo, memo.update_date"
+					+ "memo.memo_id, memo.memo, memo.update_date "
 					+ "FROM memo "
 					+ "INNER JOIN student ON memo.student_number = student.student_number "
 					+ "INNER JOIN staff ON memo.updated_staff_id = staff.staff_id "
@@ -87,8 +112,9 @@ public class StudentDao extends BaseDao {
 				String staffName = rs.getString("staff_name");
 				int memoId = rs.getInt("memo_id");
 				String memo = rs.getString("memo");
+				String date = rs.getDate("update_date").toString();
 
-				studentMemo = new StudentMemo(studentNumber, studentName, staffId, staffName, memoId, memo);
+				studentMemo = new StudentMemo(studentNumber, studentName, staffId, staffName, memoId, memo, date);
 			}
 		} catch (SQLException e) {
 			// TODO: handle exception
@@ -103,6 +129,9 @@ public class StudentDao extends BaseDao {
 		String studentName = studentMemo.getStudentName();
 		int staffId = studentMemo.getStaffId();
 		String memo = studentMemo.getMemo();
+		String date = studentMemo.getDate();
+		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+		LocalDate now = LocalDate.parse(date, dtf);
 
 		try {
 			String sql = "INSERT INTO student(student_number, student_name) VALUES(?, ?)";
@@ -117,7 +146,7 @@ public class StudentDao extends BaseDao {
 			ps.setString(1, studentNumber);
 			ps.setInt(2, staffId);
 			ps.setString(3, memo);
-			ps.setDate(4, Date.valueOf(now()));
+			ps.setObject(4, now);
 			ps.executeUpdate();
 			ct.commit();
 		} catch (SQLException e) {
@@ -130,13 +159,16 @@ public class StudentDao extends BaseDao {
 	public void updateMemo(StudentMemo studentMemo, int memoId) throws CampusException {
 		String memo = studentMemo.getMemo();
 		int staffId = studentMemo.getStaffId();
+		String date = studentMemo.getDate();
+		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+		LocalDate now = LocalDate.parse(date, dtf);
 		try {
-			String sql = "UPDATE memo SET memo = ?, updated_staff_id = ? update_date = ? WHERE memo_id = ?";
+			String sql = "UPDATE memo SET memo = ?, updated_staff_id = ?, update_date = ? WHERE memo_id = ?";
 			ps = ct.prepareStatement(sql);
 			ps.setString(1, memo);
 			ps.setInt(2, staffId);
-			ps.setInt(3, memoId);
-			ps.setDate(4, Date.valueOf(now()));
+			ps.setObject(3, now);
+			ps.setInt(4, memoId);
 			ps.executeUpdate();
 			ct.commit();
 		} catch (SQLException e) {
@@ -156,17 +188,12 @@ public class StudentDao extends BaseDao {
 			while (rs.next()) {
 				memoId = rs.getInt("memo_id");
 			}
+			System.out.println("idget");
 		} catch (SQLException e) {
 			// TODO: handle exception
 			e.printStackTrace();
 			throw new CampusException("メモIDの取得に失敗しました");
 		}
 		return memoId;
-	}
-
-	public String now() {
-		LocalDateTime now = LocalDateTime.now();
-		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
-		return now.format(dtf);
 	}
 }

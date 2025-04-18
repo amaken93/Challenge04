@@ -1,6 +1,8 @@
 package controller;
 
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -45,16 +47,23 @@ public class StudentMemoServlet extends HttpServlet {
 		String studentNumber = request.getParameter("student_number");
 		String studentName = request.getParameter("student_name");
 		String memo = request.getParameter("memo");
+		
+		LocalDate now = LocalDate.now();
+		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+		String snow =now.format(dtf);
+		System.out.println(snow);
 
 		String message = null;
 		try {
 			StudentDao studentDao = new StudentDao();
 			int memoId = studentDao.findMemoId(studentNumber);
+			System.out.println(memoId);
 
-			StudentMemo studentMemo = new StudentMemo(studentNumber, studentName, staffId, staffName, memoId, memo);
+			StudentMemo studentMemo = new StudentMemo(studentNumber, studentName, staffId, staffName, memoId, memo, snow);
 
 			if (memoId == 0) {
 				studentDao.insertStudent(studentMemo);
+				System.out.println(studentMemo.getDate());
 				System.out.println("insert");
 				message = "学生情報を登録しました";
 			} else {

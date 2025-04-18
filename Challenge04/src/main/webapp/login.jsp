@@ -37,7 +37,7 @@
 							<!-- ログインID -->
 							<div class="form-label-group">
 								<input type="text" id="id"
-									name="loginId"
+									name="loginId" pattern="[0-9]*"
 									class="form-control">
 								<label for="id">Login ID</label>
 							</div>
